@@ -195,7 +195,7 @@ html, body {
 
 /* Pause button */
 #btn-pause {
-  position: absolute; top: 8px; right: 8px; z-index: 9;
+  position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); right: 8px; z-index: 9;
   background: rgba(245,240,232,0.15);
   border: 2px solid rgba(245,240,232,0.3);
   color: #f5f0e8;
