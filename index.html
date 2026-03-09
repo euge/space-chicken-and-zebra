@@ -107,7 +107,7 @@ html, body {
 /* HUD */
 #hud {
   position: absolute; top: 0; left: 0; width: 100%;
-  padding: 8px 14px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 14px 8px 14px;
   padding-right: 50px;
   display: none; justify-content: space-between; align-items: flex-start;
   z-index: 5;
