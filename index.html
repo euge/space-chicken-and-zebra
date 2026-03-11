@@ -262,7 +262,6 @@ html, body {
       <p class="ability">Super jump! (Jumps higher)</p>
     </div>
   </div>
-  <button class="btn" id="btn-play" style="display:none">Let's Go!</button>
 </div>
 
 <!-- HUD -->
@@ -2019,7 +2018,6 @@ function changeState(newState) {
   } else if (state === 'SELECT') {
     document.getElementById('screen-select').classList.add('active');
     selectedChar = null;
-    document.getElementById('btn-play').style.display = 'none';
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     drawCharPreviews();
   } else if (state === 'PLAYING') {
@@ -2373,20 +2371,13 @@ document.getElementById('btn-continue').addEventListener('click', () => {
 
 document.getElementById('card-chicken').addEventListener('click', () => {
   selectedChar = 'chicken';
-  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-chicken').classList.add('selected');
-  document.getElementById('btn-play').style.display = '';
+  lives = 3;
+  score = 0;
+  startLevel(0);
 });
 
 document.getElementById('card-zebra').addEventListener('click', () => {
   selectedChar = 'zebra';
-  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-zebra').classList.add('selected');
-  document.getElementById('btn-play').style.display = '';
-});
-
-document.getElementById('btn-play').addEventListener('click', () => {
-  if (!selectedChar) return;
   lives = 3;
   score = 0;
   startLevel(0);
