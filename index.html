@@ -421,6 +421,7 @@ let jumpJustPressed = false;
 let platforms = [];
 let collectibles = [];
 let enemies = [];
+let aliens = [];
 let movingPlatforms = [];
 let checkpoints = [];
 let goal = null;
@@ -880,6 +881,66 @@ function drawEnemy(e) {
   ctx.restore();
 }
 
+function drawAlien(a) {
+  const x = a.x - camera.x;
+  const y = a.y - camera.y;
+  if (x < -20 || x > W + 20 || y < -20 || y > H + 20) return;
+
+  ctx.save();
+  ctx.translate(x + a.w/2, y + a.h/2);
+
+  // Tiny wobble
+  const wobble = Math.sin(Date.now() * 0.008 + a.phase) * 0.15;
+  ctx.rotate(wobble);
+
+  // Body (little green blob)
+  ctx.fillStyle = '#44dd44';
+  ctx.strokeStyle = COLORS.outline;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 6, 7, 0, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+
+  // Head (bigger round head)
+  ctx.fillStyle = '#55ee55';
+  ctx.beginPath();
+  ctx.ellipse(0, -6, 7, 6, 0, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+
+  // Eyes (big dark eyes)
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.ellipse(-3, -7, 2.5, 3, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(3, -7, 2.5, 3, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye shine
+  ctx.fillStyle = '#aaffaa';
+  ctx.beginPath();
+  ctx.arc(-2, -8, 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(4, -8, 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Little antennae
+  ctx.strokeStyle = '#44dd44';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-3, -12); ctx.lineTo(-5, -16);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(3, -12); ctx.lineTo(5, -16);
+  ctx.stroke();
+  ctx.fillStyle = '#ffff44';
+  ctx.beginPath(); ctx.arc(-5, -16, 1.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5, -16, 1.5, 0, Math.PI * 2); ctx.fill();
+
+  ctx.restore();
+}
+
 function drawCheckpoint(cp) {
   const x = cp.x - camera.x;
   const y = cp.y - camera.y;
@@ -1060,6 +1121,7 @@ function buildLevel(n) {
   platforms = [];
   collectibles = [];
   enemies = [];
+  aliens = [];
   movingPlatforms = [];
   checkpoints = [];
   goal = null;
@@ -1073,6 +1135,8 @@ function buildLevel(n) {
   const MP = (x, y, w, h, mx, my, dist) => movingPlatforms.push({x: x*T, y: y*T, ox: x*T, oy: y*T, w: (w||3)*T, h: (h||1)*T, moveX: mx||0, moveY: my||0, dist: (dist||3)*T, t: Math.random()*Math.PI*2, speed: 0.02});
   const CP = (x, y) => checkpoints.push({x: x*T+T/2, y: y*T, activated: false});
   const G = (x, y) => { goal = {x: x*T+T/2, y: y*T}; };
+  // Dropper UFO: like E but drops tiny aliens
+  const DE = (x, y, x1, x2, rate) => enemies.push({x: x*T, y: y*T, w: 36, h: 24, x1: x1*T, x2: x2*T, vx: 1.2, phase: Math.random()*Math.PI*2, dropper: true, dropRate: rate||120, dropTimer: Math.floor(Math.random()*(rate||120))});
 
   if (n === 0) {
     // Level 1: Asteroid Hop (Tutorial) — very forgiving gaps
@@ -1318,6 +1382,214 @@ function buildLevel(n) {
     P(68, 5, 5);
     C(69, 4); C(70, 4); C(71, 4);
     G(70, 5);
+
+  } else if (n === 5) {
+    // Level 6: Nebula Gauntlet — tight platforming with lots of enemies
+    levelW = 85 * T; levelH = 28 * T;
+    spawnX = 2 * T; spawnY = 22 * T;
+
+    P(0, 24, 6);
+    C(2, 23); C(4, 23);
+
+    // Quick hops with UFOs overhead
+    P(8, 24, 3);
+    E(7, 20, 6, 13);
+    C(9, 23);
+
+    P(13, 23, 3);
+    C(14, 22, 'moon');
+    E(12, 19, 11, 17);
+
+    P(18, 22, 4);
+    C(19, 21); C(20, 21);
+
+    // Vertical climb with enemies
+    P(24, 21, 3);
+    E(23, 17, 22, 28);
+    C(25, 20);
+
+    P(22, 18, 3);
+    C(23, 17, 'moon');
+
+    P(27, 16, 3);
+    CP(28, 16);
+    C(28, 15);
+
+    // Moving platforms over gaps with UFOs
+    MP(32, 17, 3, 1, 1, 0, 4);
+    E(31, 12, 30, 39);
+    C(33, 15);
+
+    P(39, 16, 4);
+    C(40, 15); C(41, 15);
+
+    MP(45, 15, 3, 1, 0, 1, 3);
+    C(46, 12, 'gem');
+
+    P(50, 13, 3);
+    CP(51, 13);
+    C(51, 12);
+
+    // Gauntlet — double UFOs and tight jumps
+    P(55, 14, 3);
+    E(54, 10, 53, 59);
+    E(54, 7, 52, 60);
+    C(56, 13);
+
+    MP(60, 13, 3, 1, 1, 0, 3);
+    C(61, 11, 'moon');
+
+    P(65, 12, 3);
+    C(66, 11);
+
+    P(70, 11, 4);
+    E(69, 7, 68, 75);
+    C(71, 10); C(72, 10);
+
+    P(76, 10, 5);
+    C(77, 9); C(78, 9, 'gem'); C(79, 9);
+    G(78, 10);
+
+  } else if (n === 6) {
+    // Level 7: Gravity Wells — lots of vertical moving platforms, tricky timing
+    levelW = 90 * T; levelH = 35 * T;
+    spawnX = 2 * T; spawnY = 28 * T;
+
+    P(0, 30, 6);
+    C(2, 29); C(4, 29);
+
+    // Rising section with moving platforms
+    MP(8, 29, 3, 1, 0, 1, 4);
+    C(9, 25);
+
+    P(13, 25, 3);
+    C(14, 24, 'moon');
+    E(12, 21, 11, 17);
+
+    MP(18, 24, 3, 1, 1, 0, 3);
+    MP(18, 20, 3, 1, -1, 0, 3);
+    C(19, 22);
+    C(19, 18);
+
+    P(24, 18, 4);
+    CP(25, 18);
+    C(25, 17); C(26, 17);
+
+    // Zigzag descent and ascent
+    P(30, 20, 3);
+    E(29, 16, 28, 34);
+    C(31, 19);
+
+    P(30, 24, 3);
+    C(31, 23);
+    MP(35, 22, 3, 1, 0, 1, 3);
+    C(36, 19, 'gem');
+
+    P(40, 18, 3);
+    C(41, 17);
+
+    MP(44, 19, 3, 1, 1, 0, 4);
+    E(43, 14, 42, 50);
+    C(45, 17);
+
+    P(50, 16, 4);
+    CP(51, 16);
+    C(51, 15); C(52, 15);
+
+    // Elevator section — multiple vertically moving platforms stacked
+    MP(56, 20, 3, 1, 0, 1, 5);
+    MP(60, 16, 3, 1, 0, 1, 4);
+    C(57, 15, 'moon');
+    C(61, 12);
+    E(55, 10, 54, 63);
+
+    P(65, 11, 4);
+    C(66, 10); C(67, 10);
+
+    // Final approach with double moving platforms
+    MP(71, 12, 3, 1, 1, 0, 3);
+    MP(71, 8, 3, 1, -1, 0, 3);
+    C(72, 10, 'gem');
+    E(70, 5, 69, 78);
+
+    P(78, 7, 5);
+    C(79, 6); C(80, 6); C(81, 6, 'moon');
+    G(80, 7);
+
+  } else if (n === 7) {
+    // Level 8: Alien Invasion — UFOs drop tiny aliens!
+    levelW = 95 * T; levelH = 35 * T;
+    spawnX = 2 * T; spawnY = 28 * T;
+
+    P(0, 30, 7);
+    C(2, 29); C(4, 29); C(6, 29);
+
+    // First encounter with dropper UFO
+    P(9, 30, 4);
+    DE(9, 24, 8, 14, 150);
+    C(10, 29); C(11, 29);
+
+    P(15, 29, 4);
+    C(16, 28, 'moon');
+
+    P(21, 28, 3);
+    DE(20, 22, 19, 25, 140);
+    C(22, 27);
+
+    P(26, 27, 4);
+    CP(27, 27);
+    C(27, 26); C(28, 26);
+
+    // Vertical ascent with dropper UFOs
+    P(32, 26, 3);
+    E(31, 22, 30, 36);
+    C(33, 25);
+
+    P(30, 23, 3);
+    DE(29, 17, 28, 34, 130);
+    C(31, 22, 'moon');
+
+    MP(35, 21, 3, 1, 0, 1, 3);
+    C(36, 18);
+
+    P(40, 18, 4);
+    CP(41, 18);
+    C(41, 17); C(42, 17);
+
+    // Mid-section: moving platforms + dropper UFOs
+    MP(46, 19, 3, 1, 1, 0, 4);
+    DE(45, 13, 44, 52, 120);
+    C(47, 17, 'gem');
+
+    P(53, 17, 3);
+    C(54, 16);
+
+    P(58, 16, 4);
+    DE(57, 10, 56, 63, 110);
+    E(57, 7, 55, 64);
+    C(59, 15); C(60, 15);
+
+    P(64, 15, 3);
+    CP(65, 15);
+    C(65, 14, 'moon');
+
+    // Final gauntlet: multiple dropper UFOs raining aliens
+    P(69, 16, 5);
+    DE(68, 9, 67, 75, 100);
+    DE(73, 11, 70, 78, 90);
+    C(70, 15); C(71, 15); C(72, 15);
+
+    MP(76, 14, 3, 1, 1, 0, 3);
+    C(77, 12, 'gem');
+
+    P(81, 12, 4);
+    DE(80, 5, 79, 86, 80);
+    DE(85, 7, 82, 90, 85);
+    C(82, 11); C(83, 11);
+
+    P(87, 11, 5);
+    C(88, 10); C(89, 10, 'gem'); C(90, 10);
+    G(89, 11);
   }
 
   // Count total stars
@@ -1332,7 +1604,10 @@ const LEVEL_NAMES = [
   "Moon Bounce",
   "UFO Alley",
   "Planet Hopper",
-  "The Final Launch"
+  "The Final Launch",
+  "Nebula Gauntlet",
+  "Gravity Wells",
+  "Alien Invasion"
 ];
 
 // ============================================================
@@ -1510,6 +1785,65 @@ function updateEnemies() {
     if (e.x <= e.x1 || e.x + e.w >= e.x2) {
       e.vx *= -1;
     }
+    // Dropper UFOs spawn tiny aliens
+    if (e.dropper) {
+      e.dropTimer--;
+      if (e.dropTimer <= 0) {
+        e.dropTimer = e.dropRate;
+        aliens.push({
+          x: e.x + e.w/2 - 6,
+          y: e.y + e.h,
+          w: 12, h: 16,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: 0,
+          onGround: false,
+          phase: Math.random() * Math.PI * 2,
+          life: 600,
+        });
+      }
+    }
+  }
+}
+
+function updateAliens() {
+  for (let i = aliens.length - 1; i >= 0; i--) {
+    const a = aliens[i];
+    a.vy += GRAVITY;
+    if (a.vy > MAX_FALL) a.vy = MAX_FALL;
+    a.x += a.vx;
+    a.y += a.vy;
+    a.life--;
+
+    // Land on platforms
+    a.onGround = false;
+    for (const p of platforms) {
+      if (a.vy >= 0 && a.y + a.h >= p.y && a.y + a.h <= p.y + 10 &&
+          a.x + a.w > p.x && a.x < p.x + p.w) {
+        a.y = p.y - a.h;
+        a.vy = 0;
+        a.onGround = true;
+      }
+    }
+    // Land on moving platforms
+    for (const mp of movingPlatforms) {
+      if (a.vy >= 0 && a.y + a.h >= mp.y && a.y + a.h <= mp.y + 10 &&
+          a.x + a.w > mp.x && a.x < mp.x + mp.w) {
+        a.y = mp.y - a.h;
+        a.vy = 0;
+        a.onGround = true;
+        a.x += mp.vxActual || 0;
+      }
+    }
+
+    // Wander on ground
+    if (a.onGround) {
+      a.vx = Math.sin(Date.now() * 0.003 + a.phase) * 1.2;
+    }
+
+    // Remove if off-screen or expired
+    if (a.y > levelH + 100 || a.life <= 0) {
+      aliens.splice(i, 1);
+    }
   }
 }
 
@@ -1582,6 +1916,16 @@ function checkEnemyCollision() {
     const er = { x: e.x + 4, y: e.y + 2, w: e.w - 8, h: e.h - 4 };
     if (aabb(ph, er)) {
       hurtPlayer(false);
+      return;
+    }
+  }
+  // Alien collision
+  for (let i = aliens.length - 1; i >= 0; i--) {
+    const a = aliens[i];
+    const ar = { x: a.x + 1, y: a.y + 1, w: a.w - 2, h: a.h - 2 };
+    if (aabb(ph, ar)) {
+      hurtPlayer(false);
+      aliens.splice(i, 1);
       return;
     }
   }
@@ -1666,7 +2010,7 @@ function changeState(newState) {
     document.getElementById('screen-title').classList.add('active');
     // Check for saved progress
     const saved = loadProgress();
-    if (saved && saved.level > 0 && saved.level < 5) {
+    if (saved && saved.level > 0 && saved.level < 8) {
       document.getElementById('btn-continue').style.display = '';
       document.getElementById('continue-level').textContent = saved.level + 1;
     } else {
@@ -1714,7 +2058,7 @@ function changeState(newState) {
 }
 
 function completeLevel() {
-  if (currentLevel >= 4) {
+  if (currentLevel >= 7) {
     changeState('WIN');
   } else {
     changeState('COMPLETE');
@@ -1887,6 +2231,7 @@ function draw() {
 
     // Enemies
     for (const e of enemies) drawEnemy(e);
+    for (const a of aliens) drawAlien(a);
 
     // Player
     if (player) {
@@ -1943,6 +2288,7 @@ function gameLoop(timestamp) {
       updateMovingPlatforms();
       updatePlayer();
       updateEnemies();
+      updateAliens();
       updateCollectibles();
       updateCheckpoints();
       checkGoal();
@@ -2103,7 +2449,7 @@ function playTone(freq, duration, type, vol) {
 initBackground();
 // Check for saved progress on initial load
 const initSaved = loadProgress();
-if (initSaved && initSaved.level > 0 && initSaved.level < 5) {
+if (initSaved && initSaved.level > 0 && initSaved.level < 8) {
   document.getElementById('btn-continue').style.display = '';
   document.getElementById('continue-level').textContent = initSaved.level + 1;
 }
