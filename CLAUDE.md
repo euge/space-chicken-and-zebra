@@ -48,3 +48,11 @@ Levels are defined procedurally in `buildLevel()` using tile coordinates (multip
 - `G(x, y)` — goal (rocket ship)
 
 When adding/modifying levels, verify all gaps are jumpable for both characters. Chicken max jump distance ~160px (single) or ~288px (with flutter). Zebra max ~220px.
+
+## Versioning
+
+The game displays a version number on the title screen (the `.version-label` span inside `#title-buttons`). When committing a new feature, increment the version in `index.html`:
+- **Minor features/tweaks**: bump the decimal (e.g. v1.0 → v1.1)
+- **Major features (new levels, new mechanics)**: bump the whole number (e.g. v1.1 → v2.0)
+
+The current version is **v1.0**. Always update it as part of the feature commit, not as a separate commit.
