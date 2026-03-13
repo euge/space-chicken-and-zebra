@@ -229,27 +229,59 @@ html, body {
   background: #0e2a2a;
   display: none; flex-direction: column; align-items: center; justify-content: flex-end;
   z-index: 100;
-  padding-bottom: max(80px, 15vh);
+  padding-bottom: max(60px, 10vh);
 }
 #screen-title.active { display: flex; }
 #screen-title .splash-img {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  position: absolute; top: 0; left: 0; width: 100%; height: 65%;
   object-fit: contain;
   z-index: 0;
 }
 #screen-title .title-buttons {
   position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 #screen-title .title-buttons .btn {
-  font-size: clamp(18px, 4vw, 26px);
-  padding: 16px 40px;
+  font-size: clamp(16px, 3.5vw, 22px);
+  padding: 12px 32px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .version-label {
   font-size: 12px;
   color: rgba(245,240,232,0.4);
   margin-top: 4px;
+}
+.settings-link {
+  font-size: 13px;
+  color: rgba(245,240,232,0.5);
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 2px;
+}
+.settings-link:hover { color: #f5f0e8; }
+#screen-settings {
+  justify-content: flex-start;
+  padding-top: max(60px, env(safe-area-inset-top, 0px) + 40px);
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px) + 20px);
+}
+#screen-settings .settings-content { width: 100%; max-width: 300px; }
+#screen-settings #btn-settings-back { margin-top: auto; }
+.settings-list {
+  width: 100%;
+  max-width: 300px;
+  margin: 20px 0;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: clamp(16px, 4vw, 20px);
+}
+.settings-toggle {
+  padding: 8px 24px !important;
+  font-size: clamp(14px, 3vw, 16px) !important;
+  min-width: 70px;
 }
 </style>
 </head>
@@ -261,9 +293,24 @@ html, body {
   <div class="title-buttons" id="title-buttons">
     <button class="btn" id="btn-start">Start Game</button>
     <button class="btn btn-secondary" id="btn-continue" style="display:none">Continue (Level <span id="continue-level"></span>)</button>
-    <button class="btn btn-secondary" id="btn-sound-title">Sound: ON</button>
     <span class="version-label">v1.0</span>
+    <a class="settings-link" id="btn-settings">Settings</a>
   </div>
+</div>
+
+<!-- Settings Screen -->
+<div id="screen-settings" class="screen">
+  <div class="screen-bg"></div>
+  <div class="settings-content">
+    <h2>Settings</h2>
+    <div class="settings-list">
+      <div class="settings-row">
+        <span>Sound</span>
+        <button class="btn btn-secondary settings-toggle" id="btn-sound-setting">ON</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn" id="btn-settings-back">Back</button>
 </div>
 
 <!-- Character Select Screen -->
@@ -2424,7 +2471,7 @@ document.getElementById('btn-pause').addEventListener('click', () => {
 // Sound toggle
 function updateSoundUI() {
   document.getElementById('btn-sound').textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
-  document.getElementById('btn-sound-title').textContent = soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+  document.getElementById('btn-sound-setting').textContent = soundEnabled ? 'ON' : 'OFF';
 }
 updateSoundUI();
 
@@ -2434,7 +2481,17 @@ function toggleSound() {
   updateSoundUI();
 }
 document.getElementById('btn-sound').addEventListener('click', toggleSound);
-document.getElementById('btn-sound-title').addEventListener('click', toggleSound);
+document.getElementById('btn-sound-setting').addEventListener('click', toggleSound);
+
+// Settings screen
+document.getElementById('btn-settings').addEventListener('click', () => {
+  document.getElementById('screen-title').classList.remove('active');
+  document.getElementById('screen-settings').classList.add('active');
+});
+document.getElementById('btn-settings-back').addEventListener('click', () => {
+  document.getElementById('screen-settings').classList.remove('active');
+  document.getElementById('screen-title').classList.add('active');
+});
 
 // ============================================================
 // UI BUTTON HANDLERS
