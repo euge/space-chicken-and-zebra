@@ -193,6 +193,21 @@ html, body {
   100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
 }
 
+/* Sound toggle button */
+#btn-sound {
+  position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); right: 52px; z-index: 9;
+  background: rgba(245,240,232,0.15);
+  border: 2px solid rgba(245,240,232,0.3);
+  color: #f5f0e8;
+  font-size: 20px;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+}
+#btn-sound.active { display: flex; }
+
 /* Pause button */
 #btn-pause {
   position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); right: 8px; z-index: 9;
@@ -241,6 +256,7 @@ html, body {
   <div class="title-buttons" id="title-buttons">
     <button class="btn" id="btn-start">Start Game</button>
     <button class="btn btn-secondary" id="btn-continue" style="display:none">Continue (Level <span id="continue-level"></span>)</button>
+    <button class="btn btn-secondary" id="btn-sound-title">Sound: ON</button>
   </div>
 </div>
 
@@ -312,7 +328,8 @@ html, body {
   <div class="touch-btn" id="btn-jump">&uarr;</div>
 </div>
 
-<!-- Pause Button -->
+<!-- Sound & Pause Buttons -->
+<button id="btn-sound" title="Toggle sound">&#128264;</button>
 <button id="btn-pause">&#10074;&#10074;</button>
 
 <script>
@@ -323,6 +340,8 @@ html, body {
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+
+let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 
 // ---- Constants ----
 const TILE = 40;
@@ -2048,6 +2067,7 @@ function changeState(newState) {
   document.getElementById('hud').classList.remove('active');
   document.getElementById('touch-controls').classList.remove('active');
   document.getElementById('btn-pause').classList.remove('active');
+  document.getElementById('btn-sound').classList.remove('active');
 
   prevState = state;
   state = newState;
@@ -2073,6 +2093,7 @@ function changeState(newState) {
       document.getElementById('touch-controls').classList.add('active');
     }
     document.getElementById('btn-pause').classList.add('active');
+    document.getElementById('btn-sound').classList.add('active');
   } else if (state === 'COMPLETE') {
     document.getElementById('screen-complete').classList.add('active');
     const bonus = 1000;
@@ -2394,6 +2415,21 @@ document.getElementById('btn-pause').addEventListener('click', () => {
   else if (state === 'PAUSED') state = 'PLAYING';
 });
 
+// Sound toggle
+function updateSoundUI() {
+  document.getElementById('btn-sound').textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
+  document.getElementById('btn-sound-title').textContent = soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+}
+updateSoundUI();
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('soundEnabled', soundEnabled);
+  updateSoundUI();
+}
+document.getElementById('btn-sound').addEventListener('click', toggleSound);
+document.getElementById('btn-sound-title').addEventListener('click', toggleSound);
+
 // ============================================================
 // UI BUTTON HANDLERS
 // ============================================================
@@ -2464,6 +2500,7 @@ function getAudioCtx() {
 }
 
 function playTone(freq, duration, type, vol) {
+  if (!soundEnabled) return;
   const ctx = getAudioCtx();
   if (!ctx) return;
   try {
