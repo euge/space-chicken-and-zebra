@@ -1130,12 +1130,12 @@ function buildLevel(n) {
   // Helper to add platform
   const P = (x, y, w, h) => platforms.push({x: x*T, y: y*T, w: (w||3)*T, h: (h||1)*T});
   const C = (x, y, type) => collectibles.push({x: x*T+T/2, y: y*T+T/2, type: type||'star', collected: false, bob: Math.random()*Math.PI*2, rot: 0});
-  const E = (x, y, x1, x2) => enemies.push({x: x*T, y: y*T, w: 36, h: 24, x1: x1*T, x2: x2*T, vx: 1.2, phase: Math.random()*Math.PI*2});
+  const E = (x, y, x1, x2) => enemies.push({x: x*T, y: y*T, baseY: y*T, w: 36, h: 24, x1: x1*T, x2: x2*T, vx: 1.2, phase: Math.random()*Math.PI*2, dipTimer: 120 + Math.floor(Math.random()*180), dipping: false, dipT: 0});
   const MP = (x, y, w, h, mx, my, dist) => movingPlatforms.push({x: x*T, y: y*T, ox: x*T, oy: y*T, w: (w||3)*T, h: (h||1)*T, moveX: mx||0, moveY: my||0, dist: (dist||3)*T, t: Math.random()*Math.PI*2, speed: 0.02});
   const CP = (x, y) => checkpoints.push({x: x*T+T/2, y: y*T, activated: false});
   const G = (x, y) => { goal = {x: x*T+T/2, y: y*T}; };
   // Dropper UFO: like E but drops tiny aliens
-  const DE = (x, y, x1, x2, rate) => enemies.push({x: x*T, y: y*T, w: 36, h: 24, x1: x1*T, x2: x2*T, vx: 1.2, phase: Math.random()*Math.PI*2, dropper: true, dropRate: rate||120, dropTimer: Math.floor(Math.random()*(rate||120))});
+  const DE = (x, y, x1, x2, rate) => enemies.push({x: x*T, y: y*T, baseY: y*T, w: 36, h: 24, x1: x1*T, x2: x2*T, vx: 1.2, phase: Math.random()*Math.PI*2, dropper: true, dropRate: rate||120, dropTimer: Math.floor(Math.random()*(rate||120)), dipTimer: 120 + Math.floor(Math.random()*180), dipping: false, dipT: 0});
 
   if (n === 0) {
     // Level 1: Asteroid Hop (Tutorial) — very forgiving gaps
@@ -1783,6 +1783,24 @@ function updateEnemies() {
     e.x += e.vx;
     if (e.x <= e.x1 || e.x + e.w >= e.x2) {
       e.vx *= -1;
+    }
+    // Parabolic dip
+    if (e.dipping) {
+      e.dipT += 1/80;
+      if (e.dipT >= 1) {
+        e.dipping = false;
+        e.dipT = 0;
+        e.y = e.baseY;
+        e.dipTimer = 120 + Math.floor(Math.random() * 180);
+      } else {
+        e.y = e.baseY + Math.sin(e.dipT * Math.PI) * 50;
+      }
+    } else {
+      e.dipTimer--;
+      if (e.dipTimer <= 0) {
+        e.dipping = true;
+        e.dipT = 0;
+      }
     }
     // Dropper UFOs spawn tiny aliens
     if (e.dropper) {
